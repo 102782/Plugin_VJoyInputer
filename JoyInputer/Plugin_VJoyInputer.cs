@@ -3,9 +3,12 @@ using System.ComponentModel;
 using FNF.Utility;
 using FNF.XmlSerializerSetting;
 using FNF.BouyomiChanApp;
+using System.Windows.Forms;
 
 namespace JoyInputer
 {
+    delegate void SimpleDelegate();
+
     public class Plugin_VJoyInputer : IPlugin 
     {
         private string _InstalledDir = Base.CallAsmPath;
@@ -14,12 +17,15 @@ namespace JoyInputer
         private string _SettingFile = Base.CallAsmPath + Base.CallAsmName + ".setting"; // 設定ファイルの保存場所
         private SimpleLogger logger;
         private string _LogFile = Base.CallAsmPath + Base.CallAsmName + "_log.txt"; // logファイルの保存場所
+        private ToolStripButton _Button;
+        private ToolStripSeparator _Separator;
 
         private VJoyInputController vjoy;
+        private bool enableVJoy;
         
         public string Name { get { return "仮想ゲームパッド入力送信プラグイン"; } }
-        public string Version { get { return "2014/02/20版"; } }
-        public string Caption { get { return "ボタンごとに設定した正規表現にマッチするワードが読み上げられたとき、仮想ゲームパッドにボタン入力を送信します"; } }
+        public string Version { get { return "2014/02/24版"; } }
+        public string Caption { get { return "ボタンごとに設定した正規表現にマッチする文字列が読み上げられたとき、対応するボタン入力を仮想ゲームパッドに送信します"; } }
         public ISettingFormData SettingFormData { get { return this._SettingFormData; } } // プラグインの設定画面情報（設定画面が必要なければnullを返してください）
 
         // プラグイン開始時処理
@@ -33,13 +39,21 @@ namespace JoyInputer
             this._Settings.Load(this._SettingFile);
             this._SettingFormData = new SettingFormData_VJoyInputer(this._Settings);
 
-            this.vjoy = new VJoyInputController(this.logger, this._Settings.span, 
-                this._Settings.buttons, this._Settings.axis, this._Settings.pov);
-            this.vjoy.Initialize(this._InstalledDir);
+            this.vjoy = new VJoyInputController(this.logger);
+            this.vjoy.Initialize(this._InstalledDir, this._Settings.span, this._Settings.buttons, this._Settings.axis, this._Settings.pov);
+            this.enableVJoy = this.vjoy.isInitializedVJoy;
 
 
             // 読み上げ開始時のイベントを登録する
             ((BouyomiChan)((FormMain)Pub.FormMain).BC).TalkTaskStarted += (new EventHandler<BouyomiChan.TalkTaskStartedEventArgs>(this.TalkTaskStarted));
+
+            //画面にボタンとセパレータを追加
+            _Separator = new ToolStripSeparator();
+            Pub.ToolStrip.Items.Add(_Separator);
+            _Button = new ToolStripButton(this.enableVJoy ? "VJoyON" : "VJoyOFF");
+            _Button.ToolTipText = this.enableVJoy ? "VJoy入力を無効に切り替える" : "VJoy入力を有効に切り替える";
+            _Button.Click += Button_Click;
+            Pub.ToolStrip.Items.Add(_Button);
         }
 
         // プラグイン終了時処理
@@ -54,8 +68,26 @@ namespace JoyInputer
             this._Settings.Save(this._SettingFile);
 
             this.logger.Add(SimpleLogger.TAG.INFO, "End: Plugin");
-            // ログファイル保存
-            this.logger.Save(this._LogFile);
+
+            if (this._Settings.log)
+            {
+                // ログファイル保存
+                this.logger.Save(this._LogFile);
+            }
+
+            //画面からボタンとセパレータを削除
+            if (_Separator != null)
+            {
+                Pub.ToolStrip.Items.Remove(_Separator);
+                _Separator.Dispose();
+                _Separator = null;
+            }
+            if (_Button != null)
+            {
+                Pub.ToolStrip.Items.Remove(_Button);
+                _Button.Dispose();
+                _Button = null;
+            }
         }
 
         // 設定クラス（設定画面表示・ファイル保存を簡略化。publicなメンバだけ保存される。XmlSerializerで処理できるクラスのみ使用可。）
@@ -63,6 +95,7 @@ namespace JoyInputer
         {
             // 保存される情報（設定画面からも参照される）
             public int span = 500;
+            public bool log = true;
             public string[] buttons = new string[32] 
             { 
                 "^B$", "^A$", "^Y$", "^X$", "^L1$", "^L2$", "^R1$", "^R2$", 
@@ -103,7 +136,7 @@ namespace JoyInputer
             // 当オブジェクトからGUIなどへの反映(設定ロード時・設定更新時に呼ばれる)
             public override void WriteSettings()
             {
-                
+                this.Plugin.ReloadVJoySettings();
             }
         }
 
@@ -141,7 +174,12 @@ namespace JoyInputer
                 [Category("01)基本設定")]
                 [DisplayName("01)ボタンの押し込み時間(ミリ秒)")]
                 [Description("設定した時間分だけ、一回の入力でボタンを押し続けます")]
-                public int Span { get { return this._Setting.span; } set { this._Setting.span = value; } }
+                public int span { get { return this._Setting.span; } set { this._Setting.span = value; } }
+
+                [Category("01)基本設定")]
+                [DisplayName("02)ログの保存")]
+                [Description("プラグインの終了時に実行ログを保存します")]
+                public bool log { get { return this._Setting.log; } set { this._Setting.log = value; } }
 
                 #region ボタン設定
                 [Category("02)ボタン設定")]
@@ -372,14 +410,82 @@ namespace JoyInputer
             }
         }
 
-        
 
+        // 読み上げられた文字列をチェック
         private void TalkTaskStarted(object sender, BouyomiChan.TalkTaskStartedEventArgs e)
         {
-            string s = (string)((TalkTaskEventArgs)e.TalkTask).SourceText;
-            this.logger.Add(SimpleLogger.TAG.INFO, string.Format("Event: TalkTaskStarted {0}", s));
-            this.vjoy.SetSource(s);
+            if (this.enableVJoy)
+            {
+                string s = (string)((TalkTaskEventArgs)e.TalkTask).SourceText;
+                //this.logger.Add(SimpleLogger.TAG.INFO, string.Format("Event: TalkTaskStarted {0}", s));
+                this.vjoy.SetSource(s);
+            }
         }
+
+        // ボタンが押されたら有効・無効を切り替える
+        private void Button_Click(object sender, EventArgs e)
+        {
+            Pub.ToolStrip.Invoke(new SimpleDelegate(() => { this._Button.Enabled = false; Pub.ToolStrip.Refresh(); }));
+            if (this.enableVJoy)
+            {
+                this.logger.Add(SimpleLogger.TAG.INFO, "Begin: OFF VJoy");
+                this.enableVJoy = false;
+                this.vjoy.Relinquish();
+                SetToolStripButton("VJoyOFF", "VJoy入力を有効に切り替える");
+                this.logger.Add(SimpleLogger.TAG.INFO, "End: OFF VJoy");
+            }
+            else
+            {
+                this.logger.Add(SimpleLogger.TAG.INFO, "Begin: ON VJoy");
+                this.vjoy.Initialize(this._InstalledDir, this._Settings.span, this._Settings.buttons, this._Settings.axis, this._Settings.pov);
+                this.enableVJoy = this.vjoy.isInitializedVJoy;
+                if (this.enableVJoy)
+                {
+                    SetToolStripButton("VJoyON", "VJoy入力を無効に切り替える");
+                }
+                else
+                {
+                    this.logger.Add(SimpleLogger.TAG.INFO, "Failed: ON VJoy");
+                }
+                this.logger.Add(SimpleLogger.TAG.INFO, "End: ON VJoy");
+            }
+            Pub.ToolStrip.Invoke(new SimpleDelegate(() => { this._Button.Enabled = true; Pub.ToolStrip.Refresh(); }));
+        }
+
+        // 有効時に設定が変更された場合に再読み込みを行う
+        public void ReloadVJoySettings()
+        {
+            if (this.enableVJoy)
+            {
+                this.logger.Add(SimpleLogger.TAG.INFO, "Begin: Reload VJoy");
+                this.enableVJoy = false;
+                this.vjoy.Relinquish();
+                this.vjoy.Initialize(this._InstalledDir, this._Settings.span, this._Settings.buttons, this._Settings.axis, this._Settings.pov);
+                this.enableVJoy = this.vjoy.isInitializedVJoy;
+                if (this.enableVJoy)
+                {
+                    SetToolStripButton("VJoyON", "VJoy入力を無効に切り替える");
+                    this.logger.Add(SimpleLogger.TAG.INFO, "End: Reload VJoy");
+                }
+                else
+                {
+                    SetToolStripButton("VJoyOFF", "VJoy入力を有効に切り替える");
+                    this.logger.Add(SimpleLogger.TAG.INFO, "Failed: Reload VJoy");
+                }
+            }
+        }
+
+        // ボタンの表示を更新する
+        private void SetToolStripButton(string text, string toolTipText)
+        {
+            Pub.ToolStrip.Invoke(new SimpleDelegate(() =>
+            {
+                this._Button.Text = text;
+                this._Button.ToolTipText = toolTipText;
+                Pub.ToolStrip.Refresh();
+            }));
+        }
+
     }
 
 

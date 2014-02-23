@@ -20,6 +20,7 @@ namespace JoyInputer
         public SimpleLogger()
         {
             this.logs = new List<string>();
+            this.logs.Add("----------------");
         }
 
         public void Add(TAG tag, string logText)
@@ -32,7 +33,7 @@ namespace JoyInputer
 
         public void Save(string path)
         {
-            using (StreamWriter w = new StreamWriter(path))
+            using (StreamWriter w = new StreamWriter(path, true, Encoding.UTF8))
             {
                 this.logs.Select(t => { w.WriteLine(t); return t; }).ToArray();
             }

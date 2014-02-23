@@ -89,6 +89,70 @@ namespace JoyInputer
             this.joystick.RelinquishVJD(this.id);
         }
 
+        public int GetButtonNumber()
+        {
+            return this.joystick.GetVJDButtonNumber(this.id);
+        }
 
+        public int GetContPovNumber()
+        {
+            return this.joystick.GetVJDContPovNumber(this.id);
+        }
+
+        public int GetDiscPovNumber()
+        {
+            return this.joystick.GetVJDDiscPovNumber(this.id);
+        }
+
+        public IEnumerable<bool> GetAxisExist()
+        {
+            return new bool[] 
+            { 
+                this.joystick.GetVJDAxisExist(this.id, HID_USAGES.HID_USAGE_X),
+                this.joystick.GetVJDAxisExist(this.id, HID_USAGES.HID_USAGE_Y),
+                this.joystick.GetVJDAxisExist(this.id, HID_USAGES.HID_USAGE_Z),
+                this.joystick.GetVJDAxisExist(this.id, HID_USAGES.HID_USAGE_RZ)
+            };
+        }
+
+        public void ResetInput()
+        {
+            this.joystick.ResetVJD(this.id);
+        }
+
+        public void InputButton(bool value, uint buttonID)
+        {
+            this.joystick.SetBtn(value, this.id, buttonID);
+        }
+
+        public void InputDiscPov(int value)
+        {
+            joystick.SetDiscPov(value, this.id, 1);
+        }
+
+        public void InputAxis1X(int value)
+        {
+            this.joystick.SetAxis(value, this.id, HID_USAGES.HID_USAGE_X);
+        }
+
+        public void InputAxis1Y(int value)
+        {
+            this.joystick.SetAxis(value, this.id, HID_USAGES.HID_USAGE_Y);
+        }
+
+        public void InputAxis2X(int value)
+        {
+            this.joystick.SetAxis(value, this.id, HID_USAGES.HID_USAGE_Z);
+        }
+
+        public void InputAxis2Y(int value)
+        {
+            this.joystick.SetAxis(value, this.id, HID_USAGES.HID_USAGE_RZ);
+        }
+
+        public void GetAxisMaxValue(ref long max)
+        {
+            this.joystick.GetVJDAxisMax(this.id, HID_USAGES.HID_USAGE_X, ref max);
+        }
     }
 }
