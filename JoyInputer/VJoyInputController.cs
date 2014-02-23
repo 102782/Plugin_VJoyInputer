@@ -176,6 +176,7 @@ namespace JoyInputer
             while(true)
             {
                 this.vjoy.ResetInput();
+                this.vjoy.InputAxis2Y((int)(this.axisMaxValue / 2));
 
                 string source = "";
 
