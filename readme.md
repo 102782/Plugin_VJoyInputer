@@ -21,12 +21,12 @@
 にて動作を確認しています。
 
 
-##vJoyの設定について補足
+##vJoyの設定についての補足
 
 * ボタン数は1から32個に対応
 * POV Hat Switch 4 Directions 1つが十字キーに対応
 * Basic Axis X と Basic Axis Y が左スティックのX軸とY軸に対応
-* Basic Axis Z と Y軸 = Basic Axis Rz が右スティックのX軸とY軸に対応
+* Basic Axis Z と Basic Axis Rz が右スティックのX軸とY軸に対応
 
 
 ##ライセンス
