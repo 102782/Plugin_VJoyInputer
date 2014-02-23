@@ -1,6 +1,6 @@
 ﻿#Plugin_VJoyInputer
 ##なにこれ？
-指定した文字列の読み上げ時に仮想ゲームパッドへ入力を送信する、棒読みちゃん（β版）用プラグインです。
+指定した文字列の読み上げ時に仮想ゲームパッドへ入力を送信する、[棒読みちゃん](http://chi.usamimi.info/Program/Application/BouyomiChan/)（β版）用プラグインです。
 
 ##どうつかうの？
 
