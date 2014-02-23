@@ -37,5 +37,12 @@ namespace JoyInputer
                 this.logs.Select(t => { w.WriteLine(t); return t; }).ToArray();
             }
         }
+
+        public override string ToString()
+        {
+            string result = "";
+            this.logs.Select(t => { result += t + Environment.NewLine; return t; }).ToArray();
+            return result;
+        }
     }
 }
