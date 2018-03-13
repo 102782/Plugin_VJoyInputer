@@ -10,32 +10,51 @@ namespace JoyInputer
     {
         private List<string> logs;
         private Object thisLock = new Object();
+        private bool enable;
 
         public enum TAG
         {
             INFO,
-            ERROR
+            ERROR,
+            DEBUG
         }
 
         public SimpleLogger()
         {
+            this.enable = false;
             this.logs = new List<string>();
             this.logs.Add("----------------");
         }
 
+        public void Enabled()
+        {
+            this.enable = true;
+        }
+
+        public void Disabled()
+        {
+            this.enable = false;
+        }
+
         public void Add(TAG tag, string logText)
         {
-            lock (thisLock)
+            if (this.enable || ((!this.enable) && (tag == TAG.ERROR)))
             {
-                this.logs.Add(string.Format("[{0}][{1}]{2}", DateTime.Now, tag, logText));
+                lock (thisLock)
+                {
+                    this.logs.Add(string.Format("[{0}][{1}]{2}", DateTime.Now, tag, logText));
+                }
             }
         }
 
         public void Save(string path)
         {
-            using (StreamWriter w = new StreamWriter(path, true, Encoding.UTF8))
+            if (this.enable)
             {
-                this.logs.Select(t => { w.WriteLine(t); return t; }).ToArray();
+                using (StreamWriter w = new StreamWriter(path, true, Encoding.UTF8))
+                {
+                    this.logs.Select(t => { w.WriteLine(t); return t; }).ToArray();
+                }
             }
         }
 

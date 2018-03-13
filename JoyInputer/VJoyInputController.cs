@@ -36,7 +36,9 @@ namespace JoyInputer
         private bool InitializeVJoy(string installedDir)
         {
             this.isInitializedVJoy = false;
+
             this.logger.Add(SimpleLogger.TAG.INFO, "Begin: Initialize VJoyController");
+
             if (!File.Exists(installedDir + "/vJoyInterface.dll"))
             {
                 this.logger.Add(SimpleLogger.TAG.ERROR, installedDir + "vJoyInterface.dll not found.Exit!");
@@ -55,8 +57,10 @@ namespace JoyInputer
                 this.logger.Add(SimpleLogger.TAG.ERROR, string.Format("Illegal device ID {0}.Exit!", this.vjoy.id));
                 return this.isInitializedVJoy;
             }
+
             this.logger.Add(SimpleLogger.TAG.INFO, this.vjoy.GetDriverAttributes());
             this.logger.Add(SimpleLogger.TAG.INFO, this.vjoy.GetDeviceStatusMessage());
+
             if (this.vjoy.Acquire())
             {
                 this.logger.Add(SimpleLogger.TAG.INFO, string.Format("Acquired: vJoy device number {0}.", this.vjoy.id));
@@ -68,12 +72,15 @@ namespace JoyInputer
             }
 
             var axis = this.vjoy.GetAxisExist().ToArray();
+
             this.logger.Add(SimpleLogger.TAG.INFO, string.Format("Axis X {0}", axis[0] ? "Yes" : "No"));
             this.logger.Add(SimpleLogger.TAG.INFO, string.Format("Axis Y {0}", axis[1] ? "Yes" : "No"));
             this.logger.Add(SimpleLogger.TAG.INFO, string.Format("Axis Z {0}", axis[2] ? "Yes" : "No"));
             this.logger.Add(SimpleLogger.TAG.INFO, string.Format("Axis Rz {0}", axis[3] ? "Yes" : "No"));
+
             this.axisMaxValue = 0;
             this.vjoy.GetAxisMaxValue(ref axisMaxValue);
+
             this.logger.Add(SimpleLogger.TAG.INFO, string.Format("Max of Axis value {0}.", this.axisMaxValue));
             this.logger.Add(SimpleLogger.TAG.INFO, string.Format("Numner of buttons {0}.", this.vjoy.GetButtonNumber()));
             this.logger.Add(SimpleLogger.TAG.INFO, string.Format("Numner of Descrete POVs {0}.", this.vjoy.GetDiscPovNumber()));
@@ -100,9 +107,12 @@ namespace JoyInputer
 
             this.span = TimeSpan.FromMilliseconds(span);
             int buttonNumber = this.vjoy.GetButtonNumber();
+
             var axisExist = this.vjoy.GetAxisExist().ToArray();
             var axisSetting = new bool[] { axisExist[0], axisExist[1], axisExist[0], axisExist[1], axisExist[2], axisExist[3], axisExist[2], axisExist[3]};
+
             bool discPovExist = this.vjoy.GetDiscPovNumber() > 0;
+
             this.buttons = buttonPatterns.Select((p, i) => { return new Inputer(i, i < buttonNumber, TimeSpan.FromMilliseconds(0), p); }).ToList<Inputer>();
             this.axis = axisPatterns.Select((p, i) => { return new Inputer(i, axisSetting[i], TimeSpan.FromMilliseconds(0), p); }).ToList<Inputer>();
             this.pov = povPatterns.Select((p, i) => { return new Inputer(i, discPovExist, TimeSpan.FromMilliseconds(0), p); }).ToList<Inputer>();
@@ -133,7 +143,7 @@ namespace JoyInputer
         private void InputButton(int id)
         {
             var target = this.buttons[id];
-            this.logger.Add(SimpleLogger.TAG.INFO, string.Format("Input: Button {0}, \"{1}\", {2} => {3}",
+            this.logger.Add(SimpleLogger.TAG.DEBUG, string.Format("Input: Button {0}, \"{1}\", {2} => {3}",
                 target.id, target.pattern, target.oldValue, target.value));
             this.vjoy.InputButton(true, (uint)(target.id + 1));
         }
@@ -141,7 +151,7 @@ namespace JoyInputer
         private void InputAxis(int id)
         {
             var target = this.axis[id];
-            this.logger.Add(SimpleLogger.TAG.INFO, string.Format("Input: Axis {0}, \"{1}\", {2} => {3}",
+            this.logger.Add(SimpleLogger.TAG.DEBUG, string.Format("Input: Axis {0}, \"{1}\", {2} => {3}",
                 target.id, target.pattern, target.oldValue, target.value));
             switch (target.id)
             {
@@ -160,7 +170,7 @@ namespace JoyInputer
         private void InputPOV(int id)
         {
             var target = this.pov[id];
-            this.logger.Add(SimpleLogger.TAG.INFO, string.Format("Input: POV {0}, \"{1}\", {2} => {3}",
+            this.logger.Add(SimpleLogger.TAG.DEBUG, string.Format("Input: POV {0}, \"{1}\", {2} => {3}",
                 target.id, target.pattern, target.oldValue, target.value));
             this.vjoy.InputDiscPov(target.id);
         }
@@ -189,7 +199,7 @@ namespace JoyInputer
                 this.axis.Where(_ => _.enable).Where(_ => _.Updated(now, this.span, source)).Select(_ => { InputAxis(_.id); return _; }).ToArray();
                 this.pov.Where(_ => _.enable).Where(_ => _.Updated(now, this.span, source)).Select(_ => { InputPOV(_.id); return _; }).ToArray();
 
-                Thread.Sleep(10);
+                Thread.Sleep(2);
             }
         }
 

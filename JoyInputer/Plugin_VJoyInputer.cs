@@ -24,20 +24,29 @@ namespace JoyInputer
         private bool enableVJoy;
         
         public string Name { get { return "仮想ゲームパッド入力送信プラグイン"; } }
-        public string Version { get { return "2014/02/24版"; } }
+        public string Version { get { return "2018/03/14版"; } }
         public string Caption { get { return "ボタンごとに設定した正規表現にマッチする文字列が読み上げられたとき、対応するボタン入力を仮想ゲームパッドに送信します"; } }
         public ISettingFormData SettingFormData { get { return this._SettingFormData; } } // プラグインの設定画面情報（設定画面が必要なければnullを返してください）
 
         // プラグイン開始時処理
         public void Begin()
         {
-            this.logger = new SimpleLogger();
-            this.logger.Add(SimpleLogger.TAG.INFO, "Begin: Plugin");
-
             // 設定ファイル読み込み
             this._Settings = new Settings_VJoyInputer(this);
             this._Settings.Load(this._SettingFile);
             this._SettingFormData = new SettingFormData_VJoyInputer(this._Settings);
+
+            this.logger = new SimpleLogger();
+            if(this._Settings.log)
+            {
+                this.logger.Enabled();
+            }
+            else
+            {
+                this.logger.Disabled();
+            }
+            
+            this.logger.Add(SimpleLogger.TAG.INFO, "Begin: Plugin");
 
             this.vjoy = new VJoyInputController(this.logger);
             this.vjoy.Initialize(this._InstalledDir, this._Settings.span, this._Settings.buttons, this._Settings.axis, this._Settings.pov);
@@ -69,11 +78,8 @@ namespace JoyInputer
 
             this.logger.Add(SimpleLogger.TAG.INFO, "End: Plugin");
 
-            if (this._Settings.log)
-            {
-                // ログファイル保存
-                this.logger.Save(this._LogFile);
-            }
+            // ログファイル保存
+            this.logger.Save(this._LogFile);
 
             //画面からボタンとセパレータを削除
             if (_Separator != null)
@@ -94,8 +100,8 @@ namespace JoyInputer
         public class Settings_VJoyInputer : SettingsBase
         {
             // 保存される情報（設定画面からも参照される）
-            public int span = 500;
-            public bool log = true;
+            public int span = 50;
+            public bool log = false;
             public string[] buttons = new string[32] 
             { 
                 "^B$", "^A$", "^Y$", "^X$", "^L1$", "^L2$", "^R1$", "^R2$", 
@@ -429,16 +435,22 @@ namespace JoyInputer
             if (this.enableVJoy)
             {
                 this.logger.Add(SimpleLogger.TAG.INFO, "Begin: OFF VJoy");
+
                 this.enableVJoy = false;
+
                 this.vjoy.Relinquish();
                 SetToolStripButton("VJoyOFF", "VJoy入力を有効に切り替える");
+
                 this.logger.Add(SimpleLogger.TAG.INFO, "End: OFF VJoy");
             }
             else
             {
                 this.logger.Add(SimpleLogger.TAG.INFO, "Begin: ON VJoy");
+
                 this.vjoy.Initialize(this._InstalledDir, this._Settings.span, this._Settings.buttons, this._Settings.axis, this._Settings.pov);
+
                 this.enableVJoy = this.vjoy.isInitializedVJoy;
+
                 if (this.enableVJoy)
                 {
                     SetToolStripButton("VJoyON", "VJoy入力を無効に切り替える");
@@ -447,6 +459,7 @@ namespace JoyInputer
                 {
                     this.logger.Add(SimpleLogger.TAG.INFO, "Failed: ON VJoy");
                 }
+
                 this.logger.Add(SimpleLogger.TAG.INFO, "End: ON VJoy");
             }
             Pub.ToolStrip.Invoke(new SimpleDelegate(() => { this._Button.Enabled = true; Pub.ToolStrip.Refresh(); }));
@@ -457,11 +470,24 @@ namespace JoyInputer
         {
             if (this.enableVJoy)
             {
+                if (this._Settings.log)
+                {
+                    this.logger.Enabled();
+                }
+                else
+                {
+                    this.logger.Disabled();
+                }
+
                 this.logger.Add(SimpleLogger.TAG.INFO, "Begin: Reload VJoy");
+
                 this.enableVJoy = false;
+
                 this.vjoy.Relinquish();
                 this.vjoy.Initialize(this._InstalledDir, this._Settings.span, this._Settings.buttons, this._Settings.axis, this._Settings.pov);
+
                 this.enableVJoy = this.vjoy.isInitializedVJoy;
+
                 if (this.enableVJoy)
                 {
                     SetToolStripButton("VJoyON", "VJoy入力を無効に切り替える");

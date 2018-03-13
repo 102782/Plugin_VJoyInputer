@@ -35,7 +35,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="BouyomiChan">
-      <HintPath>..\..\..\..\..\myfolder\tools\BouyomiChan_0_1_11_0_Beta15\BouyomiChan.exe</HintPath>
+      <HintPath>..\..\..\..\..\..\Tools\BouyomiChan_0_1_11_0_Beta16\BouyomiChan.exe</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -46,8 +46,9 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="vJoyInterfaceWrap">
-      <HintPath>..\..\..\..\..\myfolder\lib\vJoy202SDK-011112\SDK\c#\x64\vJoyInterfaceWrap.dll</HintPath>
+    <Reference Include="vJoyInterfaceWrap, Version=0.2.1.6, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\Library\vJoy218SDK\SDK\c#\x86\vJoyInterfaceWrap.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

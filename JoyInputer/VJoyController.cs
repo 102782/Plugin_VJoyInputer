@@ -114,7 +114,10 @@ namespace JoyInputer
 
         public void ResetInput()
         {
-            this.joystick.ResetVJD(this.id);
+            //this.joystick.ResetVJD(this.id); //動かねぇ
+            this.joystick.ResetButtons(this.id);
+            this.joystick.ResetPovs(this.id);
+            this.ResetAxis();
         }
 
         public void InputButton(bool value, uint buttonID)
@@ -150,6 +153,23 @@ namespace JoyInputer
         public void GetAxisMaxValue(ref long max)
         {
             this.joystick.GetVJDAxisMax(this.id, HID_USAGES.HID_USAGE_X, ref max);
+        }
+
+        private void GetAxisMiddleValue(ref long middle)
+        {
+            long max = 0;
+            this.GetAxisMaxValue(ref max);
+            middle = (max - 1) / 2;
+        }
+
+        private void ResetAxis()
+        {
+            long middle = 0;
+            GetAxisMiddleValue(ref middle);
+            this.InputAxis1X((int)middle);
+            this.InputAxis1Y((int)middle);
+            this.InputAxis2X((int)middle);
+            this.InputAxis2Y((int)middle);
         }
     }
 }
