@@ -12,11 +12,11 @@
 
 ##動作環境
 
-* Microsoft Windows 7 SP1(64bit)
+* Microsoft Windows 10 Pro(64bit)
 * Microsoft .NET Framework 3.5 以上
 * 棒読みちゃんβ版(Ver0.1.11.0 Beta15)
-* vJoy(vJoy_x86x64_I030114 Version 2.0.2)
-* FeederSDK(vJoy202SDK-011112 Version 2.0.1)
+* vJoy(v2.1.8 Build 38)
+* FeederSDK(vJoy218SDK-291116)
 
 にて動作を確認しています。
 
