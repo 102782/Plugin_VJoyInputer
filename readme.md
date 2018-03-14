@@ -7,7 +7,7 @@
 * [vJoy 公式サイト](http://vjoystick.sourceforge.net/site/)から最新の vJoy インストーラーをダウンロードしインストール（要再起動）。インストール後、vJoy の設定を行う。また、最新の FeederSDK もダウンロードしておく
 * 棒読みちゃんのフォルダに本プラグイン(Plugin_VJoyInputer.dll)を配置
 * 先ほどダウンロードした FeederSDK を展開し、SDK/C#/x86/ から vJoyInterface.dll および vJoyInterfaceWrap.dll をコピーしてきて本プラグインと同じ位置に配置
-* 棒読みちゃんを起動し本プラグインを有効にして設定を行う（正規表現については[正規表現言語要素](http://msdn.microsoft.com/ja-jp/library/az24scfc(v=vs.90).aspx)を参照）
+* 棒読みちゃんを起動し本プラグインを有効にして設定を行う（正規表現については[正規表現言語 - クイック リファレンス](https://docs.microsoft.com/ja-jp/dotnet/standard/base-types/regular-expression-language-quick-reference) を参照）
 
 
 ##動作環境
