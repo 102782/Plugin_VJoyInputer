@@ -14,9 +14,9 @@
 
 * Microsoft Windows 10 Pro(64bit)
 * Microsoft .NET Framework 3.5 以上
-* 棒読みちゃんβ版(Ver0.1.11.0 Beta15)
-* vJoy(v2.1.8 Build 38)
-* FeederSDK(vJoy218SDK-291116)
+* 棒読みちゃんβ版(Ver0.1.11.0 Beta16)
+* vJoy(v2.1.8 Build 39)
+* FeederSDK(2.1.8.39-270518/SDK)
 
 にて動作を確認しています。
 
